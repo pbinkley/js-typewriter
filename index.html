@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typewriter</title>
+  <style>
+    @font-face {
+      font-family: 'TT2020StyleE';
+      src: url('assets/TT2020StyleE-Regular.woff2') format('woff2'); 
+    }
+    body {
+      font-family: 'TT2020StyleE', 'Courier', sans-serif;
+      font-variant-ligatures: none;
+    }
+    #demo {
+      height: 100px; 
+      width: 100%; 
+      border: 1px solid black; 
+      font-size: large
+    }
+    .credits {
+      font-size: small;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Typewriter</h1>
+  
+  <p>(There's sound. This won't make much sense without sound.)</p>
+  
+  <p>Enter some text:</p>
+  
+  <form id="theText" onSubmit="return typeIt()">
+    <textarea id="source" rows="4" cols="50"></textarea>
+    <br/><br/>
+    <input type="submit" value="Type it">
+  </form>
+  
+  <p id="demo"></p>
+  
+  <audio id="key1" preload="auto">
+    <source src="sounds/monotraum-key-1.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+  <audio id="key2" preload="auto">
+    <source src="sounds/monotraum-key-2.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+  <audio id="space" preload="auto">
+    <source src="sounds/monotraum-space.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+  <audio id="shiftkey" preload="auto">
+    <source src="sounds/monotraum-shift.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+  <audio id="tscroll" preload="auto">
+    <source src="sounds/scroll.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+  <audio id="endpage" preload="auto">
+    <source src="sounds/345955__knufds__typewriter-bell-carriage-reset.wav" type="audio/wav">
+    Your browser does not support the audio element.
+  </audio>
+  
+  <script>
+    var i = 0;
+    var txt;
+    
+    var speed = 150;
+    var duration;
+    var sound;
+    
+    function typeIt() {
+      txt = document.getElementById('source').value;
+      document.getElementById("demo").innerHTML = "";
+      scrollin();
+      return false;
+    }
+    
+    function scrollin() {
+      i = 0;
+      sound = key1;
+      tscroll.play();
+      setTimeout(typeWriter, 3500);
+    }
+    
+    function typechar(ch) {
+      document.getElementById("demo").innerHTML += ch;
+    }
+    
+    function typeWriter() {
+      if (i < txt.length) {
+        ch = txt.charAt(i);
+        sound.pause();
+        sound.currentTime = 0;
+    
+        if (ch === ' ') {
+          sound = space;
+          duration = 216;
+        } else if (ch >= 'A' && ch <= 'Z') {
+          sound = shiftkey;
+          duration = 792;
+        } else {
+          sound = (Math.random() > 0.5) ? key1 : key2;
+          duration = speed + Math.floor(Math.random() * 120);
+        }
+        sound.play();
+        setTimeout(typechar, 100, ch);
+        i++;
+        setTimeout(typeWriter, duration);
+      }
+      else {
+        endpage.play();
+      }
+    }
+  </script>
+  
+  <p class="credits">
+    Typewriter font: <a href="https://ctrlcctrlv.github.io/TT2020/">TT2020</a> 
+    used under the <a href="https://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL#5667e9e4">SIL Open Font License</a>, 
+    version 1.1.
+  </p>
+  
+  <p class="credits">
+    Sounds: from <a href="https://freesound.org/people/monotraum/sounds/434027/">monotraum</a>,
+    <a href="https://freesound.org/people/blukotek/sounds/246057/">blukotek</a> and 
+    <a href="https://freesound.org/people/knufds/sounds/345955/">knufds</a>
+    on <a href="https:freesound.org">Freesound</a>, all <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>.
+  </p>
+</body>
+</html>
+
