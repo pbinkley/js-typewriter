@@ -2,6 +2,18 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="@pabinkley" />
+  <meta name="twitter:title" content="js-typewriter" />
+  <meta name="twitter:image" content="https://pbinkley.github.io/assets/type.jpg" />
+  <meta name="twitter:image:alt" content="Typewriter letters showing upper and lower case" />
+  
+  <meta property="og:title" content="js-typewriter" />
+  <meta property="og:image" content="https://pbinkley.github.io/assets/type.jpg" />
+  <meta property="og:url" content="https://pbinkley.github.io/" />
+
   <title>Typewriter</title>
   <style>
     @font-face {
@@ -21,15 +33,24 @@
     .credits {
       font-size: small;
     }
+    #head img {
+      float: left;
+      margin-right: 2em;
+      margin-bottom: 30px;
+    }
+    #posthead {
+      clear: both;
+    }
   </style>
 </head>
 <body>
-
-  <h1>Typewriter</h1>
-  
+  <div id="head">
+    <img src="assets/type-small.jpg"/>
+    <h1>Typewriter</h1>
+  </div>
   <p>(There's sound. This won't make much sense without sound.)</p>
   
-  <p>Enter some text:</p>
+  <p id="posthead">Enter some text:</p>
   
   <form id="theText" onSubmit="return typeIt()">
     <textarea id="source" rows="4" cols="50"></textarea>
