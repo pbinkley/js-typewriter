@@ -74,7 +74,8 @@
     
     var shifters = ['!', '"', '#', '$', '%', '_', '&', '\'', '(', ')',
                     '*', '+', '¼', ':', '@', '?']
-    
+    var output = document.getElementById("demo");
+
     function typeIt() {
       txt = document.getElementById('source').value;
       document.getElementById("demo").innerHTML = "";
@@ -90,7 +91,7 @@
     }
     
     function typechar(ch) {
-      document.getElementById("demo").innerHTML += ch;
+      output.innerHTML += ch;
     }
     
     function typeWriter() {
@@ -131,6 +132,10 @@
     <a href="https://freesound.org/people/blukotek/sounds/246057/">blukotek</a> and 
     <a href="https://freesound.org/people/knufds/sounds/345955/">knufds</a>
     on <a href="https:freesound.org">Freesound</a>, all <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>.
+  </p>
+  
+  <p class="credits">
+    Code: <a href="https://github.com/pbinkley/js-typewriter/">pbinkley/js-typewriter</a>
   </p>
 </body>
 </html>
