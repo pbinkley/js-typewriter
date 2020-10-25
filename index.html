@@ -72,6 +72,9 @@
     var duration;
     var sound;
     
+    var shifters = ['!', '"', '#', '$', '%', '_', '&', '\'', '(', ')',
+                    '*', '+', '¼', ':', '@', '?']
+    
     function typeIt() {
       txt = document.getElementById('source').value;
       document.getElementById("demo").innerHTML = "";
@@ -99,7 +102,7 @@
         if (ch === ' ') {
           sound = space;
           duration = 216;
-        } else if (ch >= 'A' && ch <= 'Z') {
+        } else if ((ch >= 'A' && ch <= 'Z') || shifters.includes(ch)) {
           sound = shiftkey;
           duration = 792;
         } else {
