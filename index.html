@@ -112,7 +112,11 @@
     }
     
     function typechar(ch) {
-      output.innerHTML += ch;
+      if (ch.match(/\n/)) {
+        output.innerHTML += '<br />';
+      } else {
+        output.innerHTML += ch;
+      }
     }
     
     function typeWriter() {
@@ -127,6 +131,9 @@
         } else if ((ch >= 'A' && ch <= 'Z') || shifters.includes(ch)) {
           sound = shiftkey;
           duration = 792;
+        } else if (ch.match(/\n/)) {
+          sound = endpage;
+          duration = 2920;
         } else {
           sound = (Math.random() > 0.5) ? key1 : key2;
           duration = speed + Math.floor(Math.random() * 120);
