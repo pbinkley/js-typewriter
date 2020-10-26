@@ -62,25 +62,31 @@
   
   <audio id="key1" preload="auto">
     <source src="sounds/monotraum-key-1.mp3" type="audio/mpeg">
+    <source src="sounds/monotraum-key-1.wav" type="audio/wav">
     Your browser does not support the audio element.
   </audio>
   <audio id="key2" preload="auto">
     <source src="sounds/monotraum-key-2.mp3" type="audio/mpeg">
+    <source src="sounds/monotraum-key-2.wav" type="audio/wav">
     Your browser does not support the audio element.
   </audio>
   <audio id="space" preload="auto">
     <source src="sounds/monotraum-space.mp3" type="audio/mpeg">
+    <source src="sounds/monotraum-space.wav" type="audio/wav">
     Your browser does not support the audio element.
   </audio>
   <audio id="shiftkey" preload="auto">
     <source src="sounds/monotraum-shift.mp3" type="audio/mpeg">
+    <source src="sounds/monotraum-shift.wav" type="audio/wav">
     Your browser does not support the audio element.
   </audio>
   <audio id="tscroll" preload="auto">
     <source src="sounds/scroll.mp3" type="audio/mpeg">
+    <source src="sounds/scroll.wav" type="audio/wav">
     Your browser does not support the audio element.
   </audio>
   <audio id="endpage" preload="auto">
+    <source src="sounds/345955__knufds__typewriter-bell-carriage-reset.mp3" type="audio/mpeg">
     <source src="sounds/345955__knufds__typewriter-bell-carriage-reset.wav" type="audio/wav">
     Your browser does not support the audio element.
   </audio>
@@ -92,7 +98,7 @@
     var speed = 150;
     var duration;
     var sound;
-    
+
     var shifters = ['!', '"', '#', '$', '%', '_', '&', '\'', '(', ')',
                     '*', '+', '¼', ':', '@', '?']
     var output = document.getElementById("demo");
@@ -122,9 +128,7 @@
     function typeWriter() {
       if (i < txt.length) {
         ch = txt.charAt(i);
-        sound.pause();
-        sound.currentTime = 0;
-    
+           
         if (ch === ' ') {
           sound = space;
           duration = 216;
@@ -138,10 +142,11 @@
           sound = (Math.random() > 0.5) ? key1 : key2;
           duration = speed + Math.floor(Math.random() * 120);
         }
-        sound.play();
+        sound.cloneNode(true).play();
         setTimeout(typechar, 100, ch);
-        i++;
         setTimeout(typeWriter, duration);
+
+        i++;
       }
       else {
         endpage.play();
