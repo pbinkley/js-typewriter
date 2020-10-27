@@ -15,6 +15,9 @@
   <meta property="og:url" content="https://pbinkley.github.io/js-typewriter/" />
 
   <title>Typewriter</title>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js" 
+    integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" 
+    crossorigin="anonymous"></script>
   <style>
     @font-face {
       font-family: 'TT2020StyleE';
@@ -28,7 +31,8 @@
       height: 100px; 
       width: 100%; 
       border: 1px solid black; 
-      font-size: large
+      font-size: large;
+       overflow-y: scroll;
     }
     .credits {
       font-size: small;
@@ -52,13 +56,15 @@
   
   <p id="posthead">Enter some text:</p>
   
-  <form id="theText" onSubmit="return typeIt()">
+  <form id="theText" onSubmit="return typeIt(document.getElementById('source').value)">
     <textarea id="source" rows="4" cols="50"></textarea>
     <br/><br/>
     <input type="submit" value="Type it">
   </form>
   
   <p id="demo"></p>
+  
+  <button onClick="return typeRSS('https://rss.nytimes.com/services/xml/rss/nyt/World.xml')">Type NYT headlines</button>
   
   <audio id="key1" preload="auto">
     <source src="sounds/monotraum-key-1.mp3" type="audio/mpeg">
@@ -95,16 +101,23 @@
     var i = 0;
     var txt;
     
-    var speed = 150;
+    var speed = 100;
     var duration;
     var sound;
 
     var shifters = ['!', '"', '#', '$', '%', '_', '&', '\'', '(', ')',
                     '*', '+', '¼', ':', '@', '?']
+    var nbsp = '\xa0';
     var output = document.getElementById("demo");
 
-    function typeIt() {
-      txt = document.getElementById('source').value;
+    function cleanChars(t) {
+      return t
+        .replace(/[\u2018\u2019]/g, "'")
+        .replace(/[\u201C\u201D]/g, '"')
+    }
+
+    function typeIt(t) {
+      txt = t;
       document.getElementById("demo").innerHTML = "";
       scrollin();
       return false;
@@ -115,26 +128,32 @@
       sound = key1;
       tscroll.play();
       setTimeout(typeWriter, 3500);
+      return false;
     }
     
     function typechar(ch) {
       if (ch.match(/\n/)) {
         output.innerHTML += '<br />';
+      } else if (ch === nbsp) {
+        output.innerHTML += '&nbsp;';
       } else {
         output.innerHTML += ch;
       }
+      output.scrollTop = output.scrollHeight;
+      return false;
     }
     
     function typeWriter() {
       if (i < txt.length) {
         ch = txt.charAt(i);
            
-        if (ch === ' ') {
+        if (ch === ' ' || ch === nbsp) {
           sound = space;
           duration = 216;
         } else if ((ch >= 'A' && ch <= 'Z') || shifters.includes(ch)) {
           sound = shiftkey;
-          duration = 792;
+          //duration = 792;
+          duration = 500;
         } else if (ch.match(/\n/)) {
           sound = endpage;
           duration = 2920;
@@ -151,6 +170,37 @@
       else {
         endpage.play();
       }
+      return false;
+    }
+    
+    function typeRSS(feed) {	
+      $.ajax(feed, {
+        accepts:{
+          xml:"application/rss+xml"
+        },
+        dataType:"xml",
+        success:function(data) {
+          //Credit: http://stackoverflow.com/questions/10943544/how-to-parse-an-rss-feed-using-javascript
+          txt = ''
+          
+          $(data).find("item").each(function () { // or "item" or whatever suits your feed
+            var el = $(this);
+            console.log("------------------------");
+            console.log("title      : " + el.find("title").text());
+            console.log("link       : " + el.find("link").text());
+            console.log("description: " + el.find("description").text());
+            
+            txt += cleanChars(el.find("title").text());
+            txt += "\n" + nbsp + nbsp + nbsp;
+            txt += cleanChars(el.find("description").text()); 
+            txt += "\n\n"
+          });
+          typeIt(txt);
+      
+    
+        }	
+      });
+      return false;
     }
   </script>
   
