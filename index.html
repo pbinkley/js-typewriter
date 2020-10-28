@@ -110,6 +110,8 @@
     var nbsp = '\xa0';
     var output = document.getElementById("demo");
 
+    var currentSounds = []
+
     function cleanChars(t) {
       return t
         .replace(/[\u2018\u2019]/g, "'")
@@ -119,6 +121,7 @@
     function typeIt(t) {
       txt = t;
       document.getElementById("demo").innerHTML = "";
+      currentSounds = []
       scrollin();
       return false;
     }
@@ -161,11 +164,20 @@
           sound = (Math.random() > 0.5) ? key1 : key2;
           duration = speed + Math.floor(Math.random() * 120);
         }
-        sound.cloneNode(true).play();
+
+        temp = sound.cloneNode(true);
+        temp.play();
+        currentSounds.push(temp);
+
         setTimeout(typechar, 100, ch);
         setTimeout(typeWriter, duration);
 
         i++;
+
+        // delete finished sound from beginningo of queue
+        while (currentSounds[0].duration > 0 && !currentSounds[0].paused){
+          currentSounds.shift();
+        }
       }
       else {
         endpage.play();
