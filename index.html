@@ -45,6 +45,10 @@
     #posthead {
       clear: both;
     }
+    .red {
+      color: red;
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -54,7 +58,41 @@
   </div>
   <p>(There's sound. This won't make much sense without sound.)</p>
   
-  <p id="posthead">Enter some text:</p>
+  <p id="posthead">
+    <button onClick="return typeRSS('https://rss.nytimes.com/services/xml/rss/nyt/World.xml')">Type <u>New York Times</u> headlines</button><br />
+  </p>
+  
+  <p class="red">
+    OR CHOOSE A CHAPTER OF JEEVES:
+  </p>
+  
+  <p>
+    <select name="jeeves" id="jeeves" onchange="typeChapter()">
+      <option value=""></option>
+      <option value="text/jeeves-01.txt">1. Jeeves Exerts the Old Cerebellum</option>
+      <option value="text/jeeves-02.txt">2. No Wedding Bells for Bingo</option>
+      <option value="text/jeeves-03.txt">3. Aunt Agatha Speaks Her Mind</option>
+      <option value="text/jeeves-04.txt">4. Pearls Mean Tears</option>
+      <option value="text/jeeves-05.txt">5. The Pride of the Woosters is Wounded</option>
+      <option value="text/jeeves-06.txt">6. The Hero's Reward</option>
+      <option value="text/jeeves-07.txt">7. Introducing Claude and Eustace</option>
+      <option value="text/jeeves-08.txt">8. Sir Roderick Comes to Lunch</option>
+      <option value="text/jeeves-09.txt">9. A Letter of Introduction</option>
+      <option value="text/jeeves-10.txt">10. Startling Dressiness of a Lift-Attendant</option>
+      <option value="text/jeeves-11.txt">11. Comrade Bingo</option>
+      <option value="text/jeeves-12.txt">12. Bingo Has a Bad Goodwood</option>
+      <option value="text/jeeves-13.txt">13. The Great Sermon Handicap</option>
+      <option value="text/jeeves-14.txt">14. The Purity of the Turf</option>
+      <option value="text/jeeves-15.txt">15. The Metropolitan Touch</option>
+      <option value="text/jeeves-16.txt">16. The Delayed Exit of Claude and Eustace</option>
+      <option value="text/jeeves-17.txt">17. Bingo and the Little Woman</option>
+      <option value="text/jeeves-18.txt">18. All's Well</option>
+    </select>
+  </p>  
+  
+  <p class="red">
+    OR ENTER SOME TEXT:
+  </p>
   
   <form id="theText" onSubmit="return typeIt(document.getElementById('source').value)">
     <textarea id="source" rows="4" cols="50"></textarea>
@@ -62,9 +100,11 @@
     <input type="submit" value="Type it">
   </form>
   
+  <p class="red">
+    PAPER:
+  </p>
+
   <p id="demo"></p>
-  
-  <button onClick="return typeRSS('https://rss.nytimes.com/services/xml/rss/nyt/World.xml')">Type NYT headlines</button>
   
   <audio id="key1" preload="auto">
     <source src="sounds/monotraum-key-1.mp3" type="audio/mpeg">
@@ -101,7 +141,7 @@
     var i = 0;
     var txt;
     
-    var speed = 100;
+    var speed = 75;
     var duration;
     var sound;
 
@@ -124,19 +164,19 @@
       txt = cleanChars(t);
       document.getElementById("demo").innerHTML = "";
       currentSounds = []
-      scrollin();
+      scrollIn();
       return false;
     }
     
-    function scrollin() {
+    function scrollIn() {
       i = 0;
       sound = key1;
       tscroll.play();
-      setTimeout(typeWriter, 3500);
+      setTimeout(typeText, 3500);
       return false;
     }
     
-    function typechar(ch) {
+    function typeChar(ch) {
       if (ch.match(/\n/)) {
         output.innerHTML += '<br />';
       } else if (ch === nbsp) {
@@ -148,7 +188,7 @@
       return false;
     }
     
-    function typeWriter() {
+    function typeText() {
       if (i < txt.length) {
         ch = txt.charAt(i);
            
@@ -171,8 +211,8 @@
         temp.play();
         currentSounds.push(temp);
 
-        setTimeout(typechar, 100, ch);
-        setTimeout(typeWriter, duration);
+        setTimeout(typeChar, 100, ch);
+        setTimeout(typeText, duration);
 
         i++;
 
@@ -215,6 +255,17 @@
         }	
       });
       return false;
+    }
+    
+    function typeChapter() {
+      fetch("./" + document.getElementById("jeeves").value)
+      .then(response => response.text())
+      .then(textString => { 
+        typeIt(textString);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
     }
   </script>
   
