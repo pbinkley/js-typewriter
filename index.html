@@ -114,12 +114,14 @@
 
     function cleanChars(t) {
       return t
-        .replace(/[\u2018\u2019]/g, "'")
-        .replace(/[\u201C\u201D]/g, '"')
+        .replace(/[\u2018\u2019\u275B\u275C]/g, "'")
+        .replace(/[\u201C\u201D\u201F\u275D\u275E]/g, '"')
+        .replace(/\u2014/g, '--')
+        .replace(/\u2013/g, '-');
     }
 
     function typeIt(t) {
-      txt = t;
+      txt = cleanChars(t);
       document.getElementById("demo").innerHTML = "";
       currentSounds = []
       scrollin();
@@ -202,9 +204,9 @@
             console.log("link       : " + el.find("link").text());
             console.log("description: " + el.find("description").text());
             
-            txt += cleanChars(el.find("title").text());
+            txt += el.find("title").text();
             txt += "\n" + nbsp + nbsp + nbsp;
-            txt += cleanChars(el.find("description").text()); 
+            txt += el.find("description").text(); 
             txt += "\n\n"
           });
           typeIt(txt);
