@@ -1,0 +1,18 @@
+[
+  {
+    "type": "effect",
+    "sound": "scrollin"
+  },
+  {
+    "type": "text",
+    "content": "First bit"
+  },
+  {
+    "type": "text",
+    "content": "Second bit"
+  },
+  {
+    "type": "effect",
+    "sound": "scrollout"
+  }
+]
