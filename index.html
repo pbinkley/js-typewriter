@@ -56,18 +56,17 @@
   
   <p id="posthead">Enter some text:</p>
   
-  <form id="theText" onSubmit="return typeIt(document.getElementById('source').value)">
-    <textarea id="source" rows="4" cols="50"></textarea>
-    <br/><br/>
-    <input type="submit" value="Type it">
-  </form>
+  <textarea id="source" rows="4" cols="50"></textarea>
+  <br/><br/>
+  <button onClick="return typeLine(document.getElementById('source').value)">Type it</button>
   
   <p id="demo"></p>
   
   <button onClick="return typeRSS('https://rss.nytimes.com/services/xml/rss/nyt/World.xml')">Type NYT headlines</button>
 
   <button onClick="return runScript('test-script.json')">Run script</button>
-  
+  <button onClick="return test()">Test</button>
+
   <audio id="key1" preload="auto">
     <source src="sounds/monotraum-key-1.mp3" type="audio/mpeg">
     <source src="sounds/monotraum-key-1.wav" type="audio/wav">
@@ -151,45 +150,88 @@
       return false;
     }
     
-    function typeWriter() {
-      if (i < txt.length) {
-        ch = txt.charAt(i);
-           
-        if (ch === ' ' || ch === nbsp) {
-          sound = space;
-          duration = 216;
-        } else if ((ch >= 'A' && ch <= 'Z') || shifters.includes(ch)) {
-          sound = shiftkey;
-          //duration = 792;
-          duration = 500;
-        } else if (ch.match(/\n/)) {
-          sound = endpage;
-          duration = 2920;
-        } else {
-          sound = (Math.random() > 0.5) ? key1 : key2;
-          duration = speed + Math.floor(Math.random() * 120);
-        }
-
-        temp = sound.cloneNode(true);
-        temp.play();
-        currentSounds.push(temp);
-
-        setTimeout(typechar, 100, ch);
-        setTimeout(typeWriter, duration);
-
-        i++;
-
-        // delete finished sound from beginningo of queue
-        while (currentSounds[0].duration > 0 && !currentSounds[0].paused){
-          currentSounds.shift();
-        }
-      }
-      else {
-        endpage.play();
-      }
-      return false;
+    function logger(msg) {
+      console.log(Date.now() + " " + msg);
     }
-    
+
+    function testplay() {
+      return shiftkey.play();
+    }
+
+    function test() {
+      logger('test 1');
+      promiseSetTimeout = ms => new Promise(resolve => setTimeout(resolve, ms));
+      promiseSetTimeout(1000).then(() => logger("Async operation 1"));
+      promiseSetTimeout(2500).then(() => logger("Async operation 2"));
+    }
+
+    function processCh(ch) {
+      var sound;
+      var duration;
+
+      if (ch === ' ' || ch === nbsp) {
+        sound = space.cloneNode(true);
+        duration = 216;
+      } else if ((ch >= 'A' && ch <= 'Z') || shifters.includes(ch)) {
+        sound = shiftkey.cloneNode(true);
+        //duration = 792;
+        duration = 500;
+      } else if (ch.match(/\n/)) {
+        sound = endpage.cloneNode(true);
+        duration = 2920;
+      } else {
+        sound = (Math.random() > 0.5) ? key1.cloneNode(true) : key2.cloneNode(true);
+        duration = speed + Math.floor(Math.random() * 120);
+      }
+
+      return [sound, duration];
+    }
+
+    async function typeLine(line) {
+      // break line into characters, start typing immediately
+      // use Promise.all to run all keystrokes, clean up with .finally
+
+      promiseSetTimeout = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+      let promises = []
+      timePoint = 0;
+      logger('start typeLine');
+
+      for (var i = 0; i < line.length; i++) {
+        const ch = line.charAt(i);
+        logger("char " + i + " " + ch);
+
+        chOutput = processCh(ch);
+
+
+        promises.push(new Promise((resolve) => {
+          logger("ch: " + ch);
+          logger("timePoint: " + timePoint);
+        //  chOutput = processCh(ch);
+          logger("chOutput: " + chOutput);
+          sound = chOutput[0];
+          logger(sound)
+          duration = chOutput[1];
+          sound.onended = resolve;
+
+          setTimeout(typechar, 100, ch);
+          promiseSetTimeout(timePoint)
+          .then(() => logger('in promiseSetTimeout'));
+        }));
+
+        timePoint += duration;
+        //await sleep(duration);
+        logger(promises.length + " promises");
+      }
+      logger(promises.length + " final promises");
+
+      Promise.all(promises)
+        .then(function() { 
+          logger("promises done");
+
+        });
+    }
+
     function typeRSS(feed) {
       fetch(feed)
       .then(response => {

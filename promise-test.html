@@ -1,0 +1,56 @@
+<!DOCTYPE html> 
+<html> 
+
+<head> 
+  <title> 
+    How to wrap setTimeout in a promise? 
+  </title> 
+</head> 
+
+<body style="text-align:center;"> 
+
+  <h1 style="color:green;"> 
+    GeeksforGeeks 
+  </h1> 
+
+  <h3> 
+    How to wrap setTimeout in a promise? 
+  </h3> 
+  <br> 
+
+  <button onclick="change()"> 
+    Click to print 
+  </button> 
+</body> 
+
+<script> 
+  function showkeystroke(ch, t) {
+    console.log(Date.now() + " clack");
+  }
+
+  function change() { 
+    promises = []
+    console.log(Date.now() + " start");
+    promises.push(
+      new Promise(function(resolve, reject) { 
+        setTimeout(showkeystroke, 100);
+        // Setting 2000 ms time 
+        setTimeout(resolve, 2000); 
+      })
+    );
+    promises.push(
+      new Promise(function(resolve, reject) { 
+        // Setting 2000 ms time 
+        setTimeout(resolve, 5000); 
+      })
+    );
+
+    Promise.all(promises)
+      .then(function() { 
+        console.log(Date.now() + " promises done");
+    }); 
+
+  } 
+</script> 
+
+</html>  
