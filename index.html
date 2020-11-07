@@ -111,6 +111,10 @@
 
   <p id="demo"></p>
   
+  <p>
+    <button onClick="return stopTyping()">Stop typing</button>
+  </p>
+  
   <audio id="key1" preload="auto">
     <source src="sounds/monotraum-key-1.mp3" type="audio/mpeg">
     <source src="sounds/monotraum-key-1.wav" type="audio/wav">
@@ -145,6 +149,7 @@
   <script>
     var i = 0;
     var txt;
+    var keepTyping = 1;
     
     var speed = 75;
     var duration;
@@ -166,6 +171,7 @@
     }
 
     function typeIt(t) {
+      keepTyping = 1;
       txt = cleanChars(t);
       document.getElementById("demo").innerHTML = "";
       currentSounds = []
@@ -174,65 +180,72 @@
     }
     
     function scrollIn() {
-      i = 0;
-      sound = key1;
-      tscroll.play();
-      setTimeout(typeText, 3500);
+      if (keepTyping) {
+        i = 0;
+        sound = key1;
+        tscroll.play();
+        setTimeout(typeText, 3500);
+      }
       return false;
     }
     
     function typeChar(ch) {
-      if (ch.match(/\n/)) {
-        output.innerHTML += '<br />';
-      } else if (ch === nbsp) {
-        output.innerHTML += '&nbsp;';
-      } else {
-        output.innerHTML += ch;
+      if (keepTyping) {
+        if (ch.match(/\n/)) {
+          output.innerHTML += '<br />';
+        } else if (ch === nbsp) {
+          output.innerHTML += '&nbsp;';
+        } else {
+          output.innerHTML += ch;
+        }
+        output.scrollTop = output.scrollHeight;
       }
-      output.scrollTop = output.scrollHeight;
       return false;
     }
     
     function typeText() {
-      if (i < txt.length) {
-        ch = txt.charAt(i);
-           
-        if (ch === ' ' || ch === nbsp) {
-          sound = space;
-          duration = 216;
-        } else if ((ch >= 'A' && ch <= 'Z') || shifters.includes(ch)) {
-          sound = shiftkey;
-          //duration = 792;
-          duration = 500;
-        } else if (ch.match(/\n/)) {
-          sound = endpage;
-          duration = 2920;
-        } else {
-          sound = (Math.random() > 0.5) ? key1 : key2;
-          duration = speed + Math.floor(Math.random() * 120);
+      if (keepTyping) {
+        if (i < txt.length) {
+          ch = txt.charAt(i);
+             
+          if (ch === ' ' || ch === nbsp) {
+            sound = space;
+            duration = 216;
+          } else if ((ch >= 'A' && ch <= 'Z') || shifters.includes(ch)) {
+            sound = shiftkey;
+            //duration = 792;
+            duration = 500;
+          } else if (ch.match(/\n/)) {
+            sound = endpage;
+            duration = 2920;
+          } else {
+            sound = (Math.random() > 0.5) ? key1 : key2;
+            duration = speed + Math.floor(Math.random() * 120);
+          }
+  
+          temp = sound.cloneNode(true);
+          temp.play();
+          currentSounds.push(temp);
+  
+          setTimeout(typeChar, 100, ch);
+          setTimeout(typeText, duration);
+  
+          i++;
+  
+          // delete finished sound from beginningo of queue
+          while (currentSounds[0].duration > 0 && !currentSounds[0].paused){
+            currentSounds.shift();
+          }
         }
-
-        temp = sound.cloneNode(true);
-        temp.play();
-        currentSounds.push(temp);
-
-        setTimeout(typeChar, 100, ch);
-        setTimeout(typeText, duration);
-
-        i++;
-
-        // delete finished sound from beginningo of queue
-        while (currentSounds[0].duration > 0 && !currentSounds[0].paused){
-          currentSounds.shift();
+        else {
+          endpage.play();
         }
-      }
-      else {
-        endpage.play();
       }
       return false;
     }
     
     function typeRSS(feed) {	
+      keepTyping = 1;
       $.ajax(feed, {
         accepts:{
           xml:"application/rss+xml"
@@ -263,6 +276,7 @@
     }
     
     function typeChapter() {
+      keepTyping = 1;
       fetch("./" + document.getElementById("jeeves").value)
       .then(response => response.text())
       .then(textString => { 
@@ -271,6 +285,10 @@
       .catch((error) => {
         console.error('Error:', error);
       });
+    }
+    
+    function stopTyping() {
+      keepTyping = 0;
     }
   </script>
   
