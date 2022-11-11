@@ -130,9 +130,14 @@
     <source src="sounds/monotraum-space.wav" type="audio/wav">
     Your browser does not support the audio element.
   </audio>
-  <audio id="shiftkey" preload="auto">
-    <source src="sounds/monotraum-shift.mp3" type="audio/mpeg">
-    <source src="sounds/monotraum-shift.wav" type="audio/wav">
+  <audio id="shiftup" preload="auto">
+    <source src="sounds/monotraum-shiftup.mp3" type="audio/mpeg">
+    <source src="sounds/monotraum-shiftup.wav" type="audio/wav">
+    Your browser does not support the audio element.
+  </audio>
+  <audio id="shiftdown" preload="auto">
+    <source src="sounds/monotraum-shiftdown.mp3" type="audio/mpeg">
+    <source src="sounds/monotraum-shiftdown.wav" type="audio/wav">
     Your browser does not support the audio element.
   </audio>
   <audio id="tscroll" preload="auto">
@@ -140,16 +145,26 @@
     <source src="sounds/scroll.wav" type="audio/wav">
     Your browser does not support the audio element.
   </audio>
-  <audio id="endpage" preload="auto">
-    <source src="sounds/345955__knufds__typewriter-bell-carriage-reset.mp3" type="audio/mpeg">
-    <source src="sounds/345955__knufds__typewriter-bell-carriage-reset.wav" type="audio/wav">
+  <audio id="bell" preload="auto">
+    <source src="sounds/345955__knufds__typewriter-bell.mp3" type="audio/mpeg">
+    <source src="sounds/345955__knufds__typewriter-bell.wav" type="audio/wav">
+    Your browser does not support the audio element.
+  </audio>
+  <audio id="cr" preload="auto">
+    <source src="sounds/345955__knufds__typewriter-carriage-reset.mp3" type="audio/mpeg">
+    <source src="sounds/345955__knufds__typewriter-carriage-reset.wav" type="audio/wav">
     Your browser does not support the audio element.
   </audio>
   
   <script>
     var i = 0;
+    var linePosition = 1;
+    var bellPosition = 60;
+    var crPending = false; // the bell has rung; cr after next space
     var txt;
+    var ch;
     var keepTyping = 1;
+    var shifted = false;
     
     var speed = 75;
     var duration;
@@ -171,6 +186,10 @@
     }
 
     function typeIt(t) {
+      i = 0;
+      linePosition = 1;
+      crPending = false;
+      shifted = false;
       keepTyping = 1;
       txt = cleanChars(t);
       document.getElementById("demo").innerHTML = "";
@@ -180,6 +199,7 @@
     }
     
     function scrollIn() {
+      console.log("%%%%%%%%%%%% scrollIn")
       if (keepTyping) {
         i = 0;
         sound = key1;
@@ -189,10 +209,13 @@
       return false;
     }
     
+    // add char to output div
     function typeChar(ch) {
+      console.log('@@@@@@ typeChar: ' + ch + " " + i)
       if (keepTyping) {
         if (ch.match(/\n/)) {
           output.innerHTML += '<br />';
+          crPending = false;
         } else if (ch === nbsp) {
           output.innerHTML += '&nbsp;';
         } else {
@@ -203,42 +226,120 @@
       return false;
     }
     
-    function typeText() {
+    function doSound(sound, duration) {
+      console.log('======== doSound ' + i + " " + sound.id + " " + duration)
+
+      temp = sound.cloneNode(true);
+      temp.play();
+      currentSounds.push(temp);
+
+      setTimeout(typeChar, 100, ch);
+      setTimeout(typeText, duration);
+      // delete finished sound from beginning of queue
+      while (currentSounds[0].duration > 0 && !currentSounds[0].paused){
+        currentSounds.shift();
+      }
+    }
+
+    // for a normal character, randomly choose
+    // a key sound and duration to give a slightly
+    // random effect to the typing
+    function doKeySound(ch) {
+      console.log("$$$$$$$ doKeySound " + i)
+      doSound((Math.random() > 0.5) ? key1 : key2, speed + Math.floor(Math.random() * 100));
+    }
+
+
+    // play the shift(up/down) sound, then play
+    // the character with doSound
+    function doShiftSound(shiftSound, shiftDuration, ch) {
+
+      console.log("+++++++ doShiftSound " + i)
+      temp = shiftSound.cloneNode(true);
+      temp.play();
+      currentSounds.push(temp);
+
+      setTimeout(doKeySound, shiftDuration, ch);
+    }
+
+    function doBell() {
+      console.log("!!!!!!! doBell ch=" + ch)
+
+      temp = bell.cloneNode(true);
+      temp.play();
+      currentSounds.push(temp);
+      crPending = true
+
+      i--; // reprocess this position, with crPending true, to type character
+      setTimeout(typeText, 100);
+//      typeText();
+    }
+
+    function doLineEnd(reprocess) {
+      temp = cr.cloneNode(true);
+      temp.play();
+      currentSounds.push(temp);
+      output.innerHTML += '<br />';
+
+      if (reprocess) {
+        i--; // reprocess this position, with reset linePosition, to type character
+      }
+      linePosition = 1;
+      crPending = false;
+      setTimeout(typeText, 1728);
+    }
+
+    // TODO handle space: shiftdown happens before it and 
+    // shiftup happens after it when it falls at a shift event;
+    // does not trigger shift event
+
+    // pageend: at end of text scroll paper out
+    
+    function typeText() { // handle next character 
+      console.log('------- typeText ' + i)
       if (keepTyping) {
         if (i < txt.length) {
           ch = txt.charAt(i);
-             
-          if (ch === ' ' || ch === nbsp) {
-            sound = space;
-            duration = 216;
-          } else if ((ch >= 'A' && ch <= 'Z') || shifters.includes(ch)) {
-            sound = shiftkey;
-            //duration = 792;
-            duration = 500;
-          } else if (ch.match(/\n/)) {
-            sound = endpage;
-            duration = 2920;
-          } else {
-            sound = (Math.random() > 0.5) ? key1 : key2;
-            duration = speed + Math.floor(Math.random() * 120);
+          isShiftedChar = ((ch >= 'A' && ch <= 'Z') || shifters.includes(ch));
+          console.log("new: " + ch + " shifted: " + shifted + " isShiftedChar: " + isShiftedChar);
+
+          if (crPending && (ch == ' ')) {
+            console.log("doLineEnd")
+            doLineEnd(true);
           }
-  
-          temp = sound.cloneNode(true);
-          temp.play();
-          currentSounds.push(temp);
-  
-          setTimeout(typeChar, 100, ch);
-          setTimeout(typeText, duration);
+          else if (linePosition === bellPosition) { // ring bell
+            console.log("doBell");
+            doBell();
+          }
+          else if (isShiftedChar && !shifted) {
+            shifted = true
+            doShiftSound(shiftup, 250, ch); // short sound to avoid pause
+            console.log("shift up + " + ch)
+          }
+          else if (!isShiftedChar && shifted) {
+            shifted = false
+            doShiftSound(shiftdown, 240, ch);
+            console.log("shift down + " + ch) 
+          }
+          else if (ch === ' ' || ch === nbsp) {
+            doSound(space, 216);
+            console.log("space")
+          }
+          else if (ch.match(/\n/)) {
+            doLineEnd(false);
+            console.log("cr")
+          }
+          else {
+            console.log("key: " + ch)
+            doKeySound(ch);
+          }
   
           i++;
-  
-          // delete finished sound from beginningo of queue
-          while (currentSounds[0].duration > 0 && !currentSounds[0].paused){
-            currentSounds.shift();
-          }
+          linePosition++;
+
         }
         else {
-          endpage.play();
+          cr.play();
         }
       }
       return false;
@@ -257,10 +358,10 @@
           
           $(data).find("item").each(function () { // or "item" or whatever suits your feed
             var el = $(this);
-            console.log("------------------------");
-            console.log("title      : " + el.find("title").text());
-            console.log("link       : " + el.find("link").text());
-            console.log("description: " + el.find("description").text());
+ //           console.log("------------------------");
+ //           console.log("title      : " + el.find("title").text());
+ //           console.log("link       : " + el.find("link").text());
+ //           console.log("description: " + el.find("description").text());
             
             txt += el.find("title").text();
             txt += "\n" + nbsp + nbsp + nbsp;
